@@ -2,10 +2,18 @@
   "name": "resource-planner-frontend",
   "version": "0.1.0",
   "private": true,
+  "engines":{
+    "node": "10.16.0",
+    "npm": "6.9.0"
+  },
   "dependencies": {
+    "axios": "^0.19.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
-    "react-scripts": "3.0.1"
+    "react-modal": "^3.9.1",
+    "react-native": "^0.60.4",
+    "react-scripts": "3.0.1",
+    "react-table": "^6.10.0"
   },
   "scripts": {
     "start": "react-scripts start",
