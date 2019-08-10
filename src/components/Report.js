@@ -5,6 +5,10 @@ import 'react-table/react-table.css'
 import axios from 'axios';
 import ModalPopup from './ModalPopup';
 
+const sleep = (milliseconds) => {
+    return new Promise(resolve => setTimeout(resolve, milliseconds))
+}
+
 class Report extends Component {
     constructor (props){
         super(props);
@@ -28,7 +32,8 @@ class Report extends Component {
             workerId: workerId,
             monthId: monthId,
             year: year,
-            displayModal: true
+            displayModal: true,
+            dataLoaded: false
         });
     }
 
@@ -40,17 +45,19 @@ class Report extends Component {
     }
 
     //Get data from REST API
-    getData(){
+    async getData(){
         axios.get('https://resource-planner-api.herokuapp.com/webapi/availabilities').then(
             res=>{
                 this.setState({availabilities:res.data})
             }
         );
+        await sleep(1000);
         axios.get('https://resource-planner-api.herokuapp.com/webapi/works').then(
             res=>{
                 this.setState({works:res.data})
             }
         );
+        console.log("get data");
     }
 
     //Get number of days worker worked on diferent projects in month
@@ -63,7 +70,7 @@ class Report extends Component {
                 var dateEnd=new Date(element.dateEnd);
                 const diffTime = Math.abs(dateEnd.getTime() - dateStart.getTime());
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-                if((dateEnd.getMonth()+1)===monthId && !isNaN(dateEnd) && dateEnd.getFullYear()===this.props.year) 
+                if((dateStart.getMonth()+1)===monthId && !isNaN(dateEnd) && dateEnd.getFullYear()===this.props.year) 
                     daysWorked=daysWorked+diffDays;
             }
         });
@@ -101,6 +108,7 @@ class Report extends Component {
 
     componentDidMount(){
         this.getData();
+        console.log("component did mount");
     }
 
     render() { 

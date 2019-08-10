@@ -1,7 +1,7 @@
 import React from 'react';
 import {Component} from 'react';
 import Modal from 'react-modal';
-import ReactTable from 'react-table'
+import ReactTable from 'react-table';
 import axios from 'axios';
 
 //Custom style for Modal
@@ -12,6 +12,10 @@ const customStyles = {
         height: "70%"
     }
   };
+
+const sleep = (milliseconds) => {
+    return new Promise(resolve => setTimeout(resolve, milliseconds))
+}
 
 //Storing changes in works and availabilities tables 
 var updatedWorks=[];
@@ -42,7 +46,13 @@ class ModalPopup extends Component {
     //Function called when modal is closed calls 2 functions passed as props from Report commponent in order to get reload report with new values from database
     closeModal() {
         this.setState({modalIsOpen: false});
-        this.props.reload();
+        if(updatedWorks.length!==0 || updatedAvailabilities.length!==0){
+            this.props.reload();
+        }
+        updatedWorks=[];
+        updatedAvailabilities=[];
+        updatedWorks.length=0;
+        updatedAvailabilities.length=0;
         this.props.close();
     }
 
@@ -151,10 +161,13 @@ class ModalPopup extends Component {
 
     //Puts data in updatedWorks and updatedAvailabilities array into database
     putDataIntoDatabase(){
-        updatedWorks.forEach(element => {
+        updatedWorks.forEach(async element =>{
+            await sleep(500);
             axios.put("https://resource-planner-api.herokuapp.com/webapi/works",element);
+           
         });
-        updatedAvailabilities.forEach(element => {
+        updatedAvailabilities.forEach(async element => {
+            await sleep(500);
             axios.put("https://resource-planner-api.herokuapp.com/webapi/availabilities",element);
         });
     }
@@ -196,8 +209,8 @@ class ModalPopup extends Component {
        const unique=[];
        const map=new Map();
        for(const item of this.getWorkData()){
-           if(!map.has(item.project.id)){
-                map.set(item.project.id,true);
+           if(!map.has(item.id.projectId)){
+                map.set(item.id.projectId,true);
                 unique.push(item);
             }
        }
@@ -219,7 +232,7 @@ class ModalPopup extends Component {
             (res)=>{
                 this.setState({worker: res.data})
             }
-        )
+        );
     }
 
     render() { 
