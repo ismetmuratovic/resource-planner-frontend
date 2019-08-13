@@ -17,6 +17,11 @@ const sleep = (milliseconds) => {
     return new Promise(resolve => setTimeout(resolve, milliseconds))
 }
 
+function isNormalWeekDayNumber(str) {
+    var n = Math.floor(Number(str));
+    return n !== Infinity && String(n) === str && n >= 0 && n<=7;
+}
+
 //Storing changes in works and availabilities tables 
 var updatedWorks=[];
 var updatedAvailabilities=[];
@@ -24,7 +29,7 @@ var updatedAvailabilities=[];
 class ModalPopup extends Component {
     constructor(props){
         super(props);
-        
+
         this.state={
             modalIsOpen: true,
             worker: {},
@@ -125,7 +130,7 @@ class ModalPopup extends Component {
                 //TODO: Fix double entries (When cell is edited twice but value did not change)
                 onBlur={e => {
                     if(e.target.innerHTML!==daysAvailable.toString()){
-                        this.updateAvailability(parseInt(e.target.innerHTML),week);
+                        this.updateAvailability(e.target.innerHTML,week);
                     }
               }}
               dangerouslySetInnerHTML={{
@@ -138,36 +143,49 @@ class ModalPopup extends Component {
 
     //Adds updated availability to array 
     updateAvailability(daysAvailable,week){
-        var updatedAvailability={
-            availableDays: daysAvailable,
-            id: {
-                week: week,
-                workerId: this.state.worker.id
-            }
-        };
-        updatedAvailabilities.push(updatedAvailability);
+        if(isNormalWeekDayNumber(daysAvailable)){
+            var updatedAvailability={
+                availableDays: parseInt(daysAvailable),
+                id: {
+                    week: week,
+                    workerId: this.state.worker.id
+                }
+            };
+            updatedAvailabilities.push(updatedAvailability);
+        }
+        else
+            console.log('Bad input!');
     }
 
     //Ads updated work to array
     updateWokr(cellInfo,daysWorked){
-        var updated_work=JSON.parse(JSON.stringify(cellInfo.original));
-        var date_end=new Date(cellInfo.column.id);
-        var date_start=new Date(cellInfo.column.id);
-        date_end.setDate(date_end.getDate()+parseInt(daysWorked));
-        updated_work.dateEnd=date_end.toISOString();
-        updated_work.id.dateStart=date_start.toISOString();
-        updatedWorks.push(updated_work);
+        if(isNormalWeekDayNumber(daysWorked)){
+            var updatedWork=JSON.parse(JSON.stringify(cellInfo.original));
+            var dateEnd=new Date(cellInfo.column.id);
+            var dateStart=new Date(cellInfo.column.id);
+            if(parseInt(daysWorked)!==0){
+                dateEnd.setDate(dateEnd.getDate()+parseInt(daysWorked));
+                updatedWork.dateEnd=dateEnd.toISOString();
+            }
+            else
+                updatedWork.dateEnd=null;
+            updatedWork.id.dateStart=dateStart.toISOString();
+            updatedWorks.push(updatedWork);
+        }
+        else
+            console.log('Bad input!');
     }
 
     //Puts data in updatedWorks and updatedAvailabilities array into database
-    putDataIntoDatabase(){
+    async putDataIntoDatabase(){
         updatedWorks.forEach(async element =>{
-            await sleep(500);
+            await sleep(1000);
             axios.put("https://resource-planner-api.herokuapp.com/webapi/works",element);
            
         });
+        await sleep(1000);
         updatedAvailabilities.forEach(async element => {
-            await sleep(500);
+            await sleep(1000);
             axios.put("https://resource-planner-api.herokuapp.com/webapi/availabilities",element);
         });
     }

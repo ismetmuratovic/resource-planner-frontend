@@ -57,7 +57,6 @@ class Report extends Component {
                 this.setState({works:res.data})
             }
         );
-        console.log("get data");
     }
 
     //Get number of days worker worked on diferent projects in month
@@ -108,7 +107,6 @@ class Report extends Component {
 
     componentDidMount(){
         this.getData();
-        console.log("component did mount");
     }
 
     render() { 
